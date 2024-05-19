@@ -1,0 +1,608 @@
+% \documentclass{article}
+\documentclass[8pt,landscape,a4paper, fleqn, dvipsnames]{extarticle}
+% !TEX enableShellEscape = yes
+% (The above line makes atom's latex package compile with -shell-escape
+% for minted, and is just ignored by other systems.)
+\usepackage{minted}
+\usepackage{minted} \BeforeBeginEnvironment{minted}{\begingroup\color{black}} \AfterEndEnvironment{minted}{\endgroup} \setminted{autogobble,breaklines,breakanywhere,linenos}
+
+\usepackage{minted}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{multicol}
+\usepackage{amsmath,amssymb}
+% \usepackage[fleqn]{amsmath}
+\usepackage{mathtools}
+\usepackage{wrapfig}
+\usepackage[top=0.5cm,bottom=0.5cm,left=0.6cm,right=0.6cm]{geometry}
+
+% section spacing
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{0.4\baselineskip}{0.2\baselineskip}
+
+% Math
+\def\R{\mathbb{R}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\mat}[1]{\begin{bmatrix}#1\end{bmatrix}}
+
+% matrix
+\newcommand{\zm}{%
+  \begin{bmatrix}
+    - z_1^T - \\
+    - z_2^T - \\
+    \ldots \\
+    - z_n^T -
+  \end{bmatrix}%
+}
+\newcommand{\wm}{%
+  \begin{bmatrix}
+    - w_1^T - \\
+    - w_2^T - \\
+    \ldots \\
+    - w_k^T -
+  \end{bmatrix}%
+}
+\newcommand{\wmm}{%
+  \begin{bmatrix}
+    \mid &\mid  &\ldots &\mid\\
+    w^1 & w^2 &\ldots &w^d\\
+    \mid &\mid  &\ldots &\mid
+  \end{bmatrix}%
+}
+
+\usepackage{enumitem}
+\setlist{nolistsep, itemsep = 1pt, leftmargin = 1em}
+\setlist[2]{nolistsep, topsep = 1pt, leftmargin = 1em}
+% \setlist{itemsep=1pt, topsep=1pt, leftmargin = 1em}
+% \setlist[2]{itemsep=1pt, topsep=1pt, leftmargin = 1.5em}
+\renewcommand{\labelitemii}{$\circ$}
+\renewcommand{\labelitemiii}{$\rightarrow$}
+
+\usepackage{xcolor}
+% \usepackage[dvipsnames]{xcolor}
+\definecolor{mygray}{rgb}{0.8,0.8,0.8}
+\usepackage{listings}
+\lstset{%
+basicstyle=\ttfamily,
+breaklines = true,
+% backgroundcolor=\color{mygray},
+}
+\usepackage{realboxes}
+\usepackage{soul}
+% \setlength{\abovedisplayskip}{0pt}
+% \setlength{\belowdisplayskip}{0pt}
+% \setlength{\abovedisplayshortskip}{0pt}
+% \setlength{\belowdisplayshortskip}{0pt}
+
+\begin{document}
+\begin{multicols*}{4}
+
+% \begin{minted}[linenos=false]{python}
+%     # Least squares where each sample point X has a weight associated with it.
+%     class WeightedLeastSquares(LeastSquares):
+%     # inherits the predict() function from LeastSquares
+%     def fit(self, X, y, v):
+%         """YOUR CODE HERE FOR Q3.1"""
+%         weights = np.diag(v)
+%         self.w = solve(X.T @ weights @ X, X.T @ weights @ y)
+% \end{minted}
+
+\section*{\ul{Package and Function Glossary}}
+\begin{itemize}
+    \item Libraries:
+    \begin{itemize}
+        \item cowplot: Add-on to ggplot
+        \item dplyr: Data wrangling (mutate, select, filter, summarise)
+        \item readr: Dependency of tidyverse (read.csv, tsv, etc.)
+        \item tidyverse: Includes readr, dplyr, ggplot among others
+        \item repr: Create readable text and viewable images of data
+        \item infer: Used for statistical inference (specify, hypothesize, generate, calculate)
+    \end{itemize}
+    \item Main functions:
+    \begin{itemize}
+        \item \textbf{filter()}: Filters rows where conditions specified are true. Separate argument with ,
+        \item \textbf{select()}: Returns specific columns. Separate columns with, or add ranges as array [].
+        \item \textbf{rep\_sample\_n()}: Perform repeated sample of size n. can be used to make sample dists.
+        \begin{itemize}
+            \item size = size of each sample
+            \item replace = can be TRUE or FALSE, false by default
+            \item reps = number of samples
+        \end{itemize}
+        \item \textbf{pull()}: Pulls a single column from data frame as vector
+        \item \textbf{group\_by()}: Converts tibble into grouped tibble based on the column value specified.
+        \item \textbf{summarise()}: Creates new column with transformed input (ex. mean = mean(column))
+        \item \textbf{get\_ci()}: Returns a tibble with lower and upper ci
+        \begin{itemize}
+            \item level = confidence level
+        \end{itemize}
+        \item \textbf{specify()}: Specify variable or relationship between variables of interest
+        \begin{itemize}
+            \item formula = response $\sim$ explanatory 
+            \item Alternatively, can set response = and explanatory = to variables of choice. Both are needed during hypothesis testing, only response is needed during point estimate
+            \item success = level of response considered a "success" (used primarily in proportion analysis)
+        \end{itemize}
+        \item \textbf{hypothesize()}: Declares hypothesis based on variables in specify
+        \begin{itemize}
+            \item null = null hypothesis. "independence" is used to determine relationship between response and explanatory. "point" is used to make point estimates
+            \item mu/med/sigma = true parameter, used with point null hypothesis when response is continuous
+        \end{itemize}
+        \item \textbf{generate()}: Generates simulated distribution. For CIs, this is a bootstrap distribution. For hypothesis testing, this is a null distribution
+        \begin{itemize}
+            \item reps = number of resamples to generate
+            \item type = method of generating resamples. "bootstrap" used to get bootstrap, "permute" used to get null dist (randomly assigns an input to a new output in each replicate).
+        \end{itemize}
+        \item \textbf{calculate()}: Returns statistic specified with stat argument
+        \begin{itemize}
+            \item stat = type of stat, such as mean, median, sum, sd, prop, diff in means/medians/props
+            \item order = vector specifying the order in which explanatory variables should be subtracted, ie. c(first, second)
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{\underline{Sample Plot Workflows:}}
+    \begin{itemize}
+        \item \textbf{Histogram using ggplot:}
+        \begin{lstlisting}[language = R]
+plot <- ... %>%
+    ggplot(aes(x = ...)) +
+    geom_histogram(bins/binwidth = ...) +
+    ggtitle("...") +
+    xlab("...")
+        \end{lstlisting}
+        \item \textbf{Boxplot using ggplot:}
+        \begin{lstlisting}[language = R]
+plot <- ... %>%
+    ggplot(aes(x = ..., y = ...)) +
+    geom_boxplot() +
+    ggtitle("...") +
+    ylab("...") +
+     geom_hline(yintercept = ..., color = "blue")
+        \end{lstlisting}
+        \begin{itemize}
+            \item obs.stat is the observed stat from the sample/pop
+            \item direction can be left, right, or two-sided
+            \item endpoints is a tibble with lower and upper ci
+        \end{itemize}
+    \end{itemize}
+    \item \textbf{\underline{Sampling Workflows:}}
+    \begin{itemize}
+        \item \textbf{Sampling from Population/Bootstrapping from Sample:}
+        \begin{lstlisting}[language = R]
+estimates <- ... %>%
+    rep_sample_n(size = ..., reps = ..., replace = ...) %>%
+    group_by(replicate) %>%
+    summarise(... = ...)
+        \end{lstlisting}
+        \begin{itemize}
+            \item replace = true for bootstrap, false for sampling
+        \end{itemize}
+    \item \textbf{\underline{Sampling then Selecting Variable:}}
+        \begin{lstlisting}[language = R]
+estimates <- ... %>%
+    rep_sample_n(size = ..., reps = ..., replace = ...) %>%
+    ungroup() %>%
+    select(...)
+        \end{lstlisting}
+        \item \textbf{Selecting from filtered data:}
+        \begin{lstlisting}[language = R]
+dataset <- ... %>%
+    filter(... = ...) %>%
+    select(...)
+        \end{lstlisting}
+        \item \textbf{Get CI from sample w/ infer package:}
+        \begin{lstlisting}[language = R]
+dataset <- ... %>%
+    summarise(lower_ci = quantile(stat, ...), upper_ci = quantile(stat, ...))
+        \end{lstlisting}
+    \end{itemize}
+\end{itemize}
+
+\section*{\ul{Probability and Events}}
+\begin{itemize}
+    \item Sampling w/o replacement yields more precise parameter estimates, sampling w/ replacement guarantees independence.
+    \item Sampling dist. shows all possible values of the sample mean for a given sample size and the likelihood of each value to appear
+    \begin{itemize}
+        \item The shapes of the two are not necessarily the same/similar
+        \item Not all sample means are the same value as the pop mean
+        \item Sampling dist. is centred at the true population mean (may have difference variance)
+        \item Increasing sample size doesn't necessarily reduce variance of the sample dist. as variance of random sample is independent of size (it'll probably be closer to the population variance)
+        \item As the number of sampling reps increases, the distribution becomes more smooth (less missing values/gaps) - you can also use larger binwidths in the histogram
+    \end{itemize}
+    \item Point estimates may be influenced by sampling bias (whether intentional or not)
+    \item Standard error: used to quantify variation of point estimates in a sampling dist. (sd of sampling dist.). For bootstrapping, its sd of sds in each replicate, divided by the number of bootstraps.
+    \item Estimator: rv whose dist. is the sampling dist. for a specific sample size and parameter
+    \item Bootstrapping: useful for approximating a sampling dist. when we don't have access to the entire population
+    \begin{itemize}
+        \item SD of bootstrap is a decent approximation of the sampling dist., differences between sample dist. and bootstrap are not influenced by sample size
+        \item It won't always be close to the SD or its corresponding sampling dist. as you might get an unlucky biased sample
+        \item Taking bootstraps larger than original results in an underestimated SE (artificially narrow), smaller bootstraps yields an overestimate
+    \end{itemize}
+    \item Confidence interval: Indicates an X percent change that the true population parameter is between the upper and lower bounds
+    \end{itemize}
+
+\section*{\ul{Simulation-Based Hypothesis Testing}}
+\begin{itemize}
+     \item \textbf{Sample Plot Workflows:}
+    \begin{itemize}
+        \item \textbf{Bootstrapping w/ Infer:}
+        \begin{lstlisting}[language = R]
+samp_dist_mean <- ... %>% 
+     specify(response = ...) %>% 
+     generate(type = "bootstrap", reps = 10000) %>% 
+     calculate(stat = "mean")
+        \end{lstlisting}
+        \item \textbf{Point Hypothesis (mean/median/props) using Infer:}
+        \begin{lstlisting}[language = R]
+null_model_infer <- ... %>% 
+    specify(response = ...) %>% 
+    hypothesise(null = "point", mu = mu_0) %>% 
+    generate(reps = ...) %>% 
+    calculate(stat = "mean/median/prop")
+        \end{lstlisting}
+        \item \textbf{Visualizing Hypothesis Test Results:}
+        \begin{lstlisting}[language = R]
+null_model_vis_infer <- null_model_infer %>% 
+    visualize(..., bins/binwidth = ...) + 
+    shade_p_value(obs_stat = obs_test_stat, direction = "left") +
+    xlab("...")
+        \end{lstlisting}
+        \item obs test stat is the test statistic (in these examples, it's the sample mean)
+        \item \textbf{Sampling from Null Distribution (diff in means/props):}
+        \begin{lstlisting}[language = R]
+null_model <- ... %>% 
+    specify(formula = explanatory ~ response) %>% 
+    hypothesize(null = "independence") %>% #"independence" is used for diffs
+    generate(reps = ..., type = "permute") %>% 
+    calculate(stat="diff in means/props", order = c("mu_1", "mu_2"))    
+        \end{lstlisting}
+    \end{itemize}
+    \item \textbf{Calculate p-value (difference):}
+        \begin{lstlisting}[language = R]
+p_value <- ... %>% 
+    get_p_value(obs_stat = ..., direction = "both") 
+        \end{lstlisting}
+    \item \textbf{Sampling dist and Calc Z-score for each Replicate (sample mean):}
+        \begin{lstlisting}[language = R]
+zscore_sample_means <- ... %>% 
+    rep_sample_n(reps = ..., size = ..., replace = FALSE) %>% 
+    group_by(replicate) %>% 
+    summarise(sample_mean = mean(...)) %>% 
+    mutate(z = sqrt(n) * (sample_mean - mu) / sigma )
+        \end{lstlisting}
+        \begin{itemize}
+            \item In this case, mu and sigma are given to us from our initial sample
+        \end{itemize}
+    \item \textbf{Histogram of Z-scores:}
+        \begin{lstlisting}[language = R]
+sampling_dist_sample_mean_z <- zscore_sample_means %>% 
+    ggplot() + 
+    geom_histogram(aes(z, ..density..), color = 'white', binwidth = ...) +  xlab("...") +
+    ggtitle("...")
+        \end{lstlisting}
+    \item \textbf{All of the Above + Approximating Pop Statistics:}
+        \begin{lstlisting}[language = R]
+n <- 5
+sampling_dist_zscore_s <-
+    ... %>% 
+    rep_sample_n(reps = ..., size = n, replace = FALSE) %>% 
+    group_by(replicate) %>% 
+    summarise(sample_mean = mean(...), sample_sd = sd(...)) %>% 
+    mutate(z = sqrt(n) * (sample_mean - mu) / sample_sd) %>% 
+    ggplot() +  geom_histogram(aes(z, ..density..), color = 'white', binwidth = ...) + xlab("...") + ggtitle("...")
+        \end{lstlisting}
+    \item \textbf{One-Sample t-test + p-value (two-sided):}
+        \begin{lstlisting}[language = R]
+## test stat
+test_stat <- 
+    sqrt(nrow(...)) * (mean(...) - mu0) / sd(...)
+p_value <- 2 * pt(test_stat, df = nrow(...) - 1, lower.tail = FALSE)
+        \end{lstlisting}
+        item \textbf{Recentering + p-value:}
+        \begin{lstlisting}[language = R]
+samp_dist <- ... %>%
+    specify(response = ...) %>%
+    generate(type = "bootstrap", reps = ...) %>%
+    calculate(stat = "mean")
+null_model <- samp_dist %>%
+    mutate(stat = stat - (mu - mu0)) %>% #sample_mean - null
+p_value <- mean(null_model$stat > mu)
+        \end{lstlisting}
+    \item \textbf{Above using t.test():}
+        \begin{lstlisting}[language = R]
+... <- tidy(
+    t.test(..., mu = mu0)
+    )
+        \end{lstlisting}
+        \begin{itemize}
+            \item We need a vector/column of data points and mu = mu0
+        \end{itemize}
+        \item \textbf{One-sample z-test (proportion):}
+        \begin{lstlisting}[language = R]
+## This is 1-sided greater
+phat <- mean(... == "...")
+p0 <- 0.5
+test_stat <- 
+    (phat - p0) / sqrt(p0 * (1-p0)/nrow(...))
+p_value <- 
+    pnorm(test_stat, lower.tail = FALSE)
+        \end{lstlisting}
+        \item \textbf{Above using prop.test():}
+        \begin{lstlisting}[language = R]
+\item \textbf{One-sample z-test (proportion):}
+        \begin{lstlisting}[language = R]
+answer3.2.6 <- 
+    tidy(prop.test(x = sum(... == "..."), 
+        n = nrow(...), 
+        p = 0.5, 
+        alternative = "...", 
+        conf.level = ...,
+        correct=FALSE))
+tidy(
+    prop.test(
+    x = # the number of successes,
+    n = # the number of trials, 
+    p = # p0 (i.e., the value of p under H0),
+    alternative = # alternative hypothesis: "less", "greater", "two.sided"
+    conf.level = # the desired confidence level,
+    correct = FALSE))
+        \end{lstlisting}
+        \item \textbf{Two-sample t-test (difference of means):}
+        \begin{lstlisting}[language = R]
+## This is two-sided
+... <- ... %>% 
+    filter(...) %>% #if cleaning needed
+    group_by(...) %>% 
+    summarise(sample_mean = mean(...), sample_var = var(...), n = n())
+test_stat <- (...$sample_mean[2] - ...$sample_mean[1]) / 
+    sqrt(...$sample_var[2]/...$n[2] + ...$sample_var[1]/...$n[1])
+p_value <- 2 * pt(test_stat, df = ..., lower.tail=FALSE)
+        \end{lstlisting}
+        \item \textbf{Above using t.test():}
+        \begin{lstlisting}[language = R]
+... <- tidy(
+    t.test(x = ... %>% filter(... == "...") %>% pull(...), 
+    y = ... %>% filter(... == "...") %>% pull(...),
+    alternative = "two.sided")
+    )
+        \end{lstlisting}
+    \item \textbf{two-sample z-test (diff in props):}
+        \begin{lstlisting}[language = R]
+qnts <- ... %>% 
+    group_by(...) %>% 
+    count(...)  %>% 
+    mutate(phat = n/sum(n))
+n1 <- qnts %>% 
+    filter(... == "...") %>% 
+    pull(n) %>% 
+    sum()
+n2 <- qnts %>% 
+    filter(... == "...") %>% 
+    pull(n) %>% 
+    sum()
+phat1 <- qnts %>% 
+    filter(... == "..." & ... == "...") %>% 
+    pull(phat)
+phat2 <- qnts %>% 
+    filter(... == "..." & ... == "...") %>%
+    pull(phat)
+phat <- (n1 * phat1 + n2*phat2)/(n1 + n2)
+test_stat <- (phat1 - phat2) / (sqrt(phat*(1-phat)*(1/n1 + 1/n2)))
+p_value <- 2 * pnorm(test_stat, lower.tail = FALSE)
+        \end{lstlisting}
+        \item \textbf{Above using prop.test():}
+        \begin{lstlisting}[language = R] 
+tidy(prop.test(x = c(n1*phat1, n2*phat2), 
+    n = c(n1, n2), 
+    correct = FALSE))
+        \end{lstlisting}
+        \item \textbf{Paired t-test (means of two diff pops):}
+        \begin{lstlisting}[language = R]
+... <- ... %>% 
+    mutate(d = after_... - before_...)
+test_stat <- 
+    sqrt(nrow(...))*mean(...$d)/sd(...$d)
+p_value <- pt(test_stat, nrow(...) - 1, lower.tail = FALSE)
+        \end{lstlisting}
+        \item \textbf{Above using t.test():}
+        \begin{lstlisting}[language = R]
+... <- 
+    tidy(t.test(x = ...$after_..., 
+        y = ...$before_..., 
+        paired = TRUE,
+        alternative = 'greater'))
+        \end{lstlisting}
+        \item \textbf{CI tibbles:}
+        \begin{lstlisting}[language = R]
+,,,_ci <- tibble(
+    lower_ci = qt(0.05, df = nrow(...) - 1) * ..._std_error + ..._x_bar,
+    upper_ci = qt(0.95, df = nrow(...) - 1) * ..._std_error + ..._x_bar,
+    )
+..._clt_ci <- 
+    tibble(lower_ci = ..._x_bar + qnorm(...) * ..._std_error, 
+           upper_ci = ..._x_bar - qnorm(...) * ..._std_error)
+        \end{lstlisting}
+        \item \textbf{Calculating type 1, type 2, and power:}
+        \begin{lstlisting}[language = R]
+n <- ...
+..._errors <- tibble(type_I_error = 0.05,
+    type_II_error = 1 - pnorm(qnorm(0.05, mu = mu0, sd = .../sqrt(n)), mu = mu1, .../sqrt(n)), 
+    power_of_test = pnorm(qnorm(0.05, mu0, .../sqrt(n)), mu1, .../sqrt(n)))
+        \end{lstlisting}
+        \item \textbf{Finding proportion which reject null at each alpha level:}
+        \begin{lstlisting}[language = R]
+n <- ...
+... <- ... %>% 
+    mutate(test_statistic = sqrt(n) * (sample_mean - pop_mean) / pop_sd) %>% 
+    mutate(reject_h0 = abs(test_statistic) > qnorm(1-alpha/2)) %>% 
+    group_by(population, alpha) %>% 
+    summarise(proportion_rejection = mean(reject_h0)
+        \end{lstlisting}
+        \item \textbf{ANOVA using aov():}
+        \begin{lstlisting}[language = R]
+anova_results <- aov(formula = response ~ explanatory, data = ...) %>% 
+    tidy()
+
+f_stat <- anova_results$statistic[1]
+
+anova_pval <- anova_results$p.value[1]
+        \end{lstlisting}
+        \item \textbf{Prediction interval (0.9), returns vector:}
+        \begin{lstlisting}[language = R]
+... <- ... %>% 
+    pull(...) %>% 
+    quantile(c(0.05, 0.95)) %>% 
+    unname()
+        \end{lstlisting}
+        \item \textbf{True Coverage Probability, returns vector:}
+        \begin{lstlisting}[language = R]
+... <- ... %>% 
+    summarise(prop = mean(
+        between( ..., ...[1], ...[2])
+    )) %>% 
+    pull(prop)
+        \end{lstlisting}
+        \item \textbf{All of the above + sampling}
+        \begin{lstlisting}[language = R]
+sample_pi <- ... %>% 
+    rep_sample_n(100, replace = FALSE, reps = 1000) %>% 
+    group_by(replicate) %>% 
+    summarise(lower = quantile(..., 0.05),
+            upper = quantile(..., 0.95))
+            
+..._vec <- ...$...
+
+coverage <- sample_pi %>% 
+    group_by(replicate) %>% 
+    summarise(coverage = mean(
+        between(..._vec, lower, upper)
+        )) %>% 
+    pull(coverage)
+        \end{lstlisting}
+        \item \textbf{Bonferroni Adjustment}
+        \begin{lstlisting}[language = R]
+pval_bonf <- p.adjust(...$p_value, method = "bonferroni")
+count_bonf <- sum(pval_bonf < 0.05)
+        \end{lstlisting}
+        \item \textbf{BH Adjustment}
+        \begin{lstlisting}[language = R]
+pval_bh <- p.adjust(...$p_value, method = "BH")
+count_bh <- sum(pval_bh < 0.05)
+        \end{lstlisting}
+    \item Pop and sample dists show how some individual data points are distributed, whereas sampling dists show how a statistic (aggregate of points) is distributed for a given sample size n
+    \item Sampling Dist properties:
+    \begin{itemize}
+        \item Centered at true population parameter
+        \item Bell-shaped/normal
+        \item Becomes narrower and more bell-shaped as n increases
+    \end{itemize}
+    \item Standard error is measure of the variability of point estimates in sampling distribution, whereas sd (and variance) are measures of spread
+    \item Test statistic: statistic to use for the test
+    \item Null hypothesis: status quo. If true, the test statistic falls in the sampling distribution under $H_0$
+    \item Alternative hypothesis: conclusion we wish to make (provided there's evidence to support it)
+    \item p-value: Probability of getting a value at least as extreme as the observed one (left/right bound or two-sided)
+    \begin{itemize}
+        \item There is an X chance of observing a test stat at least as extreme as the observed value, provided the null is true
+    \end{itemize}
+    \item Significance level: Denoted as $\alpha$, predetermined value so we reject the null is p-value $\leq \alpha$.
+    \item Law of Large Numbers: LLN states that the sample averages converges to population mean as sample size increases (makes sense as the sample begins to more closely resemble the population)
+    \item Normal ($\mu, \sigma$) properties:
+    \begin{itemize}
+        \item Unimodal and bell shaped
+        \item Symmetric around mean $\mu$
+        \item SD $\sigma$ quantifies spread
+        \item Z-score is calculated as $Z = \frac{(x - \mu)^2}{\sigma^2}$
+        \item Z-score means a value is Z-score SDs higher/lower than the mean
+    \end{itemize}
+    \item CLT: for large sample size n, the sampling dist of the mean or proportion converges to the normal distribution REGARDLESS OF POPULATION
+    \begin{itemize}
+        \item $\Bar{X} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$ or $\hat{p} \sim N(p, \sqrt{\frac{p(1 - p)}{n}})$
+    \end{itemize}
+    \item CLT Assumptions:
+    \begin{itemize}
+        \item Items in sample are IID
+        \item Sample size is less than 0.1 of pop
+        \item Sample must be large enough $np$ and $n(1 - p)$ must be greater or equal to 10 for proportions, for means usually 30 is ok
+    \end{itemize}
+    \item For means, if CLT is satisfied, we have $\Bar{X} \sim N(\mu, \frac{\sigma}{\sqrt{n}})$. You can find this for 0.95 confidence using qnorm(0.975, $\Bar{X}$, $\frac{s}{\sqrt{n}}$)
+    \begin{itemize}
+        \item CI($\mu, \alpha$) = $\bar{x} \pm z_{1 - \frac{\alpha}{2}^{*}} * \frac{s}{\sqrt{n}}$
+    \end{itemize}
+    \item For means, if CLT is satisfied, we have $\hat{p} \sim N(p, \sqrt{\frac{p(1 - p)}{n}})$
+    \begin{itemize}
+        \item CI($\hat{p}, \alpha$) = $\hat{p} \pm z_{1 - \frac{\alpha}{2}^{*}} * \sqrt{\frac{\hat{p}(1 - \hat{p})}{n}}$
+    \end{itemize}
+    \item For a difference in means, $\bar{X} - \bar{Y} \sim N(\mu_1 - \mu_2), \sqrt{\frac{\sigma_1^2}{n_1} + \frac{\sigma_2^2}{n_2}}$
+    \begin{itemize}
+        \item CI($\hat{p}, \alpha$) = $\hat{p} \pm z_{1 - \frac{\alpha}{2}^{*}} * \sqrt{\frac{s_1^2}{n_1} + \frac{s_2^2}{n_2}}$
+    \end{itemize}
+    \item For a difference in proportions, $\hat{p}_1 - \hat{p}_2 \sim N(p_1 - p_2), \sqrt{\frac{p_1(1 - p_1)}{n_1} + \frac{p_2(1 - p_2)}{n_2}}$
+    \begin{itemize}
+        \item CI($\hat{p}, \alpha$) = $\hat{p} \pm z_{1 - \frac{\alpha}{2}^{*}} * \sqrt{\frac{\hat{p_1}(1 - \hat{p_1})}{n_1} + \frac{\hat{p_2}(1 - \hat{p_2})}{n_2}}$
+    \end{itemize}
+    \item Standardizing a variable Z converts its distribution to standard normal
+    \begin{itemize}
+        \item Apply the following transformation: $Z = \frac{\bar{X} - \mu}{\frac{\sigma}{\sqrt{n}}}$
+        \item For a proportion: $Z = \frac{\hat{p} - p_0}{\sqrt{\frac{p_0*(1 - p_0)}{n}}}$
+        \item Use pnorm on the standardized Z value to get a Z value 
+    \end{itemize}
+    \item In the event we don't have the population sd, we can use s (sample sd). This adds extra variation.
+    \begin{itemize}
+        \item $t = \frac{\bar{x} - \mu_0}{s / \sqrt{n}} \sim t_{n - 1}$
+        \item The tails of the t-dist are heavier to account for the additional variation (for lower degrees of freedom)
+        \item T-dist is centered about 0 with a dof parameter. In 1-sample, dof = n - 1
+        \item The higher dof, the closer the t-dist is to N(0, 1)
+    \end{itemize}
+    \item Steps for 1 proportion z-test:
+    \begin{itemize}
+        \item Formulate null and alternative hypothesis (ex. $H_0: p = 0.5$ vs $H_1: p_1 \neq 0.5$)
+        \item Define test statistic (p)
+        \item Calculate null model $\hat{p} = N(p_0, \sqrt{\frac{p_0*(1 - p_0)}{n}})$
+        \item Take sample 
+        \item Calculate the observed test stat $\hat{p}$
+        \item Contrast observed test stat with null model by calculating p-value
+    \end{itemize}
+    \item Two proportion z-test:
+    \begin{itemize}
+        \item Formulate null and alternative hypothesis (ex. $H_0: p_1 = p_2$ vs $H_1: p_1 \neq p_2$)
+        \item Define test statistic $\hat{p}_1 - \hat{p_2}$
+        \item Calculate null model $\hat{p} = N(0, \sqrt{p*(1 - p)(\frac{1}{n_1} + \frac{1}{n_2})})$
+        \item Take sample x 2 and find $\hat{p}$
+        \item Calculate the observed test stat $\hat{p}_1 - \hat{p}_2$
+        \item Contrast observed test stat with null model by calculating p-value (2 * pnorm($\hat{p}_1 - \hat{p}_2$, 0, $\sqrt{p*(1 - p)(\frac{1}{n_1} + \frac{1}{n_2})}$)
+    \end{itemize}
+    \item Error in hypothesis testing faq:
+    \begin{itemize}
+        \item Changing significance level does not affect effect size or overlap between SD and null (error). Location of border separating the null and alternative will change.
+        \item Increasing sample size reduces chance of type 2 error (power of test increases). The size of the overlap between null and alternative decreases
+        \item Lowering significance reduces chance of type 1 error, but increases type 2
+        \item By only reporting p-value, you miss info on effect size and error associated with the statistic
+        \item Increasing sample size increases power as it narrows the sampling dist, thus reducing overlap error between sampling dist and null
+    \end{itemize}
+    \item Remember, var of a prop is $\frac{p(1-p)}{n}$
+    \item ANOVA is used to compared between multiple groups, null is $\mu_1 = \mu_2 = ... = \mu_n$ (one variable is categorical, the other continuous)
+    \begin{itemize}
+        \item ANOVA performs better if variances WITHIN groups are the same
+        \item If p value is low enough, conclusion is that at least 1 group has a mean that is significantly different from others (presence of difference vs quantifying that difference)
+    \end{itemize}
+    \item Prediction interval: Interval when making inference on a new observation (not estimation from previous observations)
+    \begin{itemize}
+        \item We take upper and lower quantiles of the population distribution.
+    \end{itemize}. 
+    \item As sample size increases:
+    \begin{itemize}
+        \item CIs get narrower as we zero in on true value
+        \item Prediction intervals remain roughly the same - we are getting better at estimating true quantiles making up the bounds of the PI
+    \end{itemize}
+    \item True coverage probability is proportion of the pop that truly falls in the interval. If it's less than the specified probability:
+    \begin{itemize}
+        \item More individuals will be outside the interval than we think
+        \item To capture the TCP, we have to shrink the PI
+    \end{itemize}
+    \item The Bonferroni adjustment limits probability of seeing at least one Type 1 error to the specified significance level $\alpha$ to $\alpha/k$ (normally, probability of false positive is $\alpha$)
+    \begin{itemize}
+        \item This mitigates the difference between different types
+    \end{itemize}
+    \item BH Adjustment controls the false discovery rate (rate significant features are actually null)
+\end{itemize}
+    
+\end{multicols*}
+\end{document}
